@@ -60,6 +60,7 @@ extra.set("apktoolVersion", apktoolVersion)
 plugins {
     `java-library`
     alias(libs.plugins.vanniktech.maven.publish) apply false
+    id("org.jetbrains.kotlin.jvm") version "2.4.20" apply false
 }
 
 allprojects {
@@ -80,6 +81,7 @@ allprojects {
 subprojects {
     apply(plugin = "java")
     apply(plugin = "java-library")
+    apply(plugin = "org.jetbrains.kotlin.jvm")
 
     java {
         toolchain {
@@ -91,6 +93,14 @@ subprojects {
         options.encoding = "UTF-8"
         // Build with JDK 17, but emit Java 8 compatible bytecode against the Java 8 API.
         options.release.set(8)
+    }
+
+    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile>().configureEach {
+        compilerOptions {
+            // Match the Java side: JVM 1.8 bytecode, checked against the Java 8 API.
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8)
+            freeCompilerArgs.add("-Xjdk-release=1.8")
+        }
     }
 
     tasks.withType<Test>().configureEach {
