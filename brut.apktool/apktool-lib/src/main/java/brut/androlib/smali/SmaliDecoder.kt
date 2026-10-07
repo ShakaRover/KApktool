@@ -41,10 +41,14 @@ import java.util.concurrent.atomic.AtomicInteger
 class SmaliDecoder(
     apkFile: File,
     private val mDebugMode: Boolean,
+    jobs: Int,
 ) {
     private val mDexContainer: ZipDexContainer = ZipDexContainer(apkFile, null)
     private val mDexFiles: MutableSet<String> = ConcurrentHashMap.newKeySet()
     private val mInferredApiLevel = AtomicInteger()
+
+    // 单个 dex 内部的类级并发度：与 apktool 的 -j 一致（至少 1）。
+    private val mJobs: Int = maxOf(jobs, 1)
 
     init {
         // ZipDexContainer 懒初始化且非线程安全：在构造线程上先行触发初始化。
@@ -119,9 +123,9 @@ class SmaliDecoder(
         }
     }
 
-    /** 执行 baksmali 反汇编（最多 6 并发任务）。 */
+    /** 执行 baksmali 反汇编（并发度取自 -j）。 */
     private fun decodeFile(dexFile: DexBackedDexFile, smaliDir: File) {
-        val jobs = minOf(Runtime.getRuntime().availableProcessors(), 6)
+        val jobs = mJobs
 
         val options = BaksmaliOptions().apply {
             parameterRegisters = true

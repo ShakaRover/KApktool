@@ -33,9 +33,12 @@ import java.io.IOException
  * #3641：opcode API 级别封顶 29（dex 版本 039），更高 API 由 aapt2/打包层处理。
  * 任一文件语法错误即中断整个目录构建。
  */
-class SmaliBuilder(apiLevel: Int) {
+class SmaliBuilder(apiLevel: Int, jobs: Int) {
     // #3641 - opcode API 级别封顶 29（dex 版本最高 039）。
     private val mApiLevel: Int = minOf(apiLevel, 29)
+
+    // 汇编并发度：与 apktool 的 -j 一致（至少 1）。
+    private val mJobs: Int = maxOf(jobs, 1)
 
     /** 把 smali 目录汇编为单个 dex 文件。 */
     @Throws(AndrolibException::class)
@@ -56,6 +59,7 @@ class SmaliBuilder(apiLevel: Int) {
                 // apiLevel <= 0 时退回默认 opcode 集合，保持旧行为。
                 this.apiLevel = if (mApiLevel > 0) mApiLevel else Opcodes.default.api
                 outputDexFile = dexFile.absolutePath
+                this.jobs = mJobs
                 verboseErrors = VERBOSE_ERRORS
                 printTokens = PRINT_TOKENS
             }

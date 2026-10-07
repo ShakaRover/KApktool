@@ -74,7 +74,7 @@ class ApkBuilder(
         try {
             val info = ApkInfo.load(File(mApkDir, "apktool.yml"))
             mApkInfo = info
-            val smaliBuilder = SmaliBuilder(info.sdkInfo.minSdkVersionInt)
+            val smaliBuilder = SmaliBuilder(info.sdkInfo.minSdkVersionInt, mConfig.jobs)
             mSmaliBuilder = smaliBuilder
             val aaptInvoker = AaptInvoker(info, mConfig)
             mAaptInvoker = aaptInvoker

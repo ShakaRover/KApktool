@@ -91,7 +91,7 @@ class ApkDecoder(
             apkInfo = info
             info.version = mConfig.version
             info.apkFile = mApkFile
-            val smaliDecoder = SmaliDecoder(mApkFile, mConfig.isBaksmaliDebugMode)
+            val smaliDecoder = SmaliDecoder(mApkFile, mConfig.isBaksmaliDebugMode, mConfig.jobs)
             mSmaliDecoder = smaliDecoder
             val resDecoder = ResDecoder(info, mConfig)
             mResDecoder = resDecoder

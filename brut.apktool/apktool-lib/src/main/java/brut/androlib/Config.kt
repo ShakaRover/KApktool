@@ -41,7 +41,11 @@ class Config(
 
     // 通用选项
 
-    /** 并发任务数（默认 CPU 核数，封顶 8）。 */
+    /**
+     * 并发任务数（默认 CPU 核数，封顶 8）。
+     *
+     * 同时作为 smali 汇编与 baksmali 反汇编的类级/文件级并发度，`-j 1` 即完全串行。
+     */
     var jobs: Int = minOf(Runtime.getRuntime().availableProcessors(), 8)
 
     /** framework 目录覆盖路径。 */

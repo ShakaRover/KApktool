@@ -51,6 +51,9 @@ val shadowJar = tasks.register("shadowJar", Jar::class) {
 
     group = "build"
     description = "Creates a single executable JAR with all dependencies"
+    // Distinct from the plain `jar` output (apktool-cli.jar) so the two tasks cannot
+    // clobber each other; matches the exclusion list of cleanOutputDirectory.
+    archiveClassifier.set("all")
     manifest.attributes["Main-Class"] = "brut.apktool.Main"
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
