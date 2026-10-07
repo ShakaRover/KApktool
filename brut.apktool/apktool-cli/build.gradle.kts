@@ -9,6 +9,9 @@ plugins {
 dependencies {
     implementation(project(":brut.apktool:apktool-lib"))
     implementation(libs.commons.cli)
+    // Expose the smali/baksmali command line tools through `apktool smali` / `apktool baksmali`.
+    implementation(libs.smali)
+    implementation(libs.baksmali)
     r8(libs.r8)
 }
 

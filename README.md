@@ -8,6 +8,21 @@ Apktool is a tool for reverse engineering third-party, closed, binary, Android a
 
 Apktool is **NOT** intended for piracy and other non-legal uses. It could be used for localizing and adding features, adding support for custom platforms, and other GOOD purposes. Just try to be fair with the authors of an app, that you use and probably like.
 
+### Sub-tools
+The smali and baksmali command line tools are bundled and exposed as apktool subcommands:
+
+```
+apktool smali assemble [options] <smali-dir>      # smali -> dex
+apktool smali print-tokens <smali-file>           # dump the lexer tokens
+apktool baksmali disassemble [options] <dex-file> # dex -> smali
+apktool baksmali deodex [options] <odex-file>     # odex -> smali
+apktool baksmali dump [options] <dex-file>        # dump the dex structure
+apktool baksmali list [options] <dex-file>        # list classes/fields/methods
+```
+
+They behave exactly like the standalone `smali` / `baksmali` binaries; run
+`apktool smali --help` or `apktool baksmali --help` for the full command list.
+
 ### Branches
 - `main` - Apktool 3.x branch
 - `2.x` - Maintenance branch for Apktool 2.x releases

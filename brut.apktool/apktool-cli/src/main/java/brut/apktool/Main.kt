@@ -26,6 +26,8 @@ import brut.androlib.exceptions.OutDirExistsException
 import brut.androlib.res.AaptManager
 import brut.androlib.res.Framework
 import brut.util.OSDetection
+import com.android.tools.smali.baksmali.Main as BaksmaliMain
+import com.android.tools.smali.smali.Main as SmaliMain
 import org.apache.commons.cli.CommandLine
 import org.apache.commons.cli.DefaultParser
 import org.apache.commons.cli.HelpFormatter
@@ -348,6 +350,8 @@ object Main {
             "cf", "clean-frameworks" -> cmdCleanFrameworks(cmdArgs)
             "lf", "list-frameworks" -> cmdListFrameworks(cmdArgs)
             "pr", "publicize-resources" -> cmdPublicizeResources(cmdArgs)
+            "smali" -> cmdSmali(cmdArgs)
+            "baksmali" -> cmdBaksmali(cmdArgs)
             "h", "help", "-help", "--help" -> {
                 loadOptions(null, true)
                 printUsage()
@@ -695,6 +699,25 @@ object Main {
         }
     }
 
+    /**
+     * 直接转交 smali 项目自带的 CLI（assemble / print-tokens / help）。
+     *
+     * 不做二次包装：参数、帮助、退出码全部由 smali 自己的 JCommander 前端决定，
+     * 这样 `apktool smali ...` 与独立 `smali` 命令行为一致。
+     */
+    private fun cmdSmali(args: Array<String>) {
+        SmaliMain.main(args)
+    }
+
+    /**
+     * 直接转交 baksmali 项目自带的 CLI（disassemble / deodex / dump / list / help）。
+     *
+     * 同 [cmdSmali]：行为与独立 `baksmali` 命令一致。
+     */
+    private fun cmdBaksmali(args: Array<String>) {
+        BaksmaliMain.main(args)
+    }
+
     private fun cmdPublicizeResources(args: Array<String>) {
         val cli = parseOptions(publicizeResourcesOptions, args)
         val argList = cli.argList
@@ -788,6 +811,12 @@ object Main {
             writer.println()
         }
         if (loadedOptions == null) {
+            writer.println("apktool smali <command> [options]")
+            writer.println("  Run the smali assembler CLI. See: apktool smali --help")
+            writer.println()
+            writer.println("apktool baksmali <command> [options]")
+            writer.println("  Run the baksmali disassembler CLI. See: apktool baksmali --help")
+            writer.println()
             writer.println("apktool h|help")
             writer.println()
             writer.println("apktool v|version")
