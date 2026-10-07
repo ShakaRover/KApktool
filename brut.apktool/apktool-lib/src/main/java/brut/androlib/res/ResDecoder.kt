@@ -411,7 +411,7 @@ class ResDecoder(
             // 与实际资源包不同才保留（改名），相同则清空。
             val manifestPackage = resourcesInfo.packageName
             val resourcesPackage = pkg.getName()
-            if (resourcesPackage != null && resourcesPackage != manifestPackage) {
+            if (!resourcesPackage.isNullOrEmpty() && resourcesPackage != manifestPackage) {
                 resourcesInfo.packageName = resourcesPackage
             } else {
                 // 无需改名：资源包为空或与 manifest 相同。

@@ -22,23 +22,13 @@ import brut.directory.DirectoryException
 import brut.directory.FileDirectory
 import brut.util.OS
 import com.android.tools.smali.dexlib2.Opcodes
-import com.android.tools.smali.dexlib2.writer.builder.DexBuilder
-import com.android.tools.smali.dexlib2.writer.io.FileDataStore
-import com.android.tools.smali.smali.smaliFlexLexer
-import com.android.tools.smali.smali.smaliParser
-import com.android.tools.smali.smali.smaliTreeWalker
-import org.antlr.runtime.CommonTokenStream
-import org.antlr.runtime.RecognitionException
-import org.antlr.runtime.tree.CommonTree
-import org.antlr.runtime.tree.CommonTreeNodeStream
+import com.android.tools.smali.smali.SmaliOptions
+import com.android.tools.smali.smali.assemble
 import java.io.File
 import java.io.IOException
-import java.io.InputStreamReader
-import java.nio.charset.StandardCharsets
-import java.nio.file.Files
 
 /**
- * smali -> dex 汇编器：逐个 .smali 文件经 ANTLR 词法/语法/树遍历三步装配进同一个 [DexBuilder]。
+ * smali -> dex 汇编器：委托 smali 模块的 [assemble] 单遍前端，把整个目录装配成单个 dex 文件。
  *
  * #3641：opcode API 级别封顶 29（dex 版本 039），更高 API 由 aapt2/打包层处理。
  * 任一文件语法错误即中断整个目录构建。
@@ -51,33 +41,7 @@ class SmaliBuilder(apiLevel: Int) {
     @Throws(AndrolibException::class)
     fun build(smaliDir: File, dexFile: File) {
         try {
-            val dexBuilder = DexBuilder(
-                if (mApiLevel > 0) Opcodes.forApi(mApiLevel) else Opcodes.getDefault()
-            )
-
-            for (fileName in FileDirectory(smaliDir).getFiles(true)) {
-                val smaliFile = File(smaliDir, fileName)
-
-                if (!fileName.endsWith(".smali")) {
-                    Log.w(TAG, "Unknown file type, ignoring: $smaliFile")
-                    continue
-                }
-
-                var success: Boolean
-                var cause: Exception?
-                try {
-                    success = buildFile(smaliFile, dexBuilder)
-                    cause = null
-                } catch (ex: Exception) {
-                    success = false
-                    cause = ex
-                }
-                if (!success) {
-                    val ex = AndrolibException("Could not smali file: $smaliFile")
-                    cause?.let { ex.initCause(it) }
-                    throw ex
-                }
-            }
+            warnUnknownFiles(smaliDir)
 
             if (dexFile.exists()) {
                 OS.rmfile(dexFile)
@@ -88,7 +52,17 @@ class SmaliBuilder(apiLevel: Int) {
                 }
             }
 
-            dexBuilder.writeTo(FileDataStore(dexFile))
+            val options = SmaliOptions().apply {
+                // apiLevel <= 0 时退回默认 opcode 集合，保持旧行为。
+                this.apiLevel = if (mApiLevel > 0) mApiLevel else Opcodes.default.api
+                outputDexFile = dexFile.absolutePath
+                verboseErrors = VERBOSE_ERRORS
+                printTokens = PRINT_TOKENS
+            }
+
+            if (!assemble(options, smaliDir.absolutePath)) {
+                throw AndrolibException("Could not smali folder: " + smaliDir.name)
+            }
         } catch (ex: DirectoryException) {
             throw AndrolibException("Could not smali folder: " + smaliDir.name, ex)
         } catch (ex: IOException) {
@@ -98,44 +72,13 @@ class SmaliBuilder(apiLevel: Int) {
         }
     }
 
-    /** 汇编单个 smali 文件；词法/语法/遍历任一阶段报错返回 false。 */
-    @Throws(IOException::class, RecognitionException::class)
-    private fun buildFile(smaliFile: File, dexBuilder: DexBuilder): Boolean {
-        InputStreamReader(Files.newInputStream(smaliFile.toPath()), StandardCharsets.UTF_8).use { reader ->
-            val lexer = smaliFlexLexer(reader, mApiLevel)
-            lexer.setSourceFile(smaliFile)
-
-            val tokens = CommonTokenStream(lexer)
-
-            if (PRINT_TOKENS) {
-                for (token in tokens.tokens) {
-                    if (token.channel != smaliParser.HIDDEN) {
-                        println(smaliParser.tokenNames[token.type] + ": " + token.text)
-                    }
-                }
+    /** 对目录中非 .smali 文件保持与旧实现一致的告警。 */
+    @Throws(DirectoryException::class)
+    private fun warnUnknownFiles(smaliDir: File) {
+        for (fileName in FileDirectory(smaliDir).getFiles(true)) {
+            if (!fileName.endsWith(".smali")) {
+                Log.w(TAG, "Unknown file type, ignoring: " + File(smaliDir, fileName))
             }
-
-            val parser = smaliParser(tokens)
-            parser.setApiLevel(mApiLevel)
-            parser.setVerboseErrors(VERBOSE_ERRORS)
-
-            val result = parser.smali_file()
-
-            if (parser.numberOfSyntaxErrors > 0 || lexer.numberOfSyntaxErrors > 0) {
-                return false
-            }
-
-            val tree = result.tree as CommonTree
-            val treeStream = CommonTreeNodeStream(tree)
-            treeStream.setTokenStream(tokens)
-
-            val treeWalker = smaliTreeWalker(treeStream)
-            treeWalker.setApiLevel(mApiLevel)
-            treeWalker.setVerboseErrors(VERBOSE_ERRORS)
-            treeWalker.setDexBuilder(dexBuilder)
-            treeWalker.smali_file()
-
-            return treeWalker.numberOfSyntaxErrors == 0
         }
     }
 

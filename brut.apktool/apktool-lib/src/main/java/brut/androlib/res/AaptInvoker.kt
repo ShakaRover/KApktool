@@ -146,7 +146,9 @@ class AaptInvoker(
                 }
             }
         }
-        resourcesInfo.packageName?.let {
+        // 空包名会传给 aapt2 并导致其 abort（all packages being linked must have a name），
+        // 同时兼容旧 apktool.yml 中持久化的 packageName: ''。
+        resourcesInfo.packageName?.takeIf { it.isNotEmpty() }?.let {
             cmd.add("--rename-resources-package")
             cmd.add(it)
         }

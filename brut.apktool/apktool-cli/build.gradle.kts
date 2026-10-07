@@ -51,35 +51,36 @@ val shadowJar = tasks.register("shadowJar", Jar::class) {
     manifest.attributes["Main-Class"] = "brut.apktool.Main"
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
-    val dependencies = configurations
-        .runtimeClasspath
-        .get()
-        .map(::zipTree)
-
-    from(dependencies)
+    // Resolve the runtime classpath lazily: doing it while the build is still being
+    // configured breaks with the included `smali` build (composite dependency substitution).
+    from(configurations.runtimeClasspath.map { classpath -> classpath.map(::zipTree) })
     with(tasks.jar.get())
 }
 
 tasks.register<JavaExec>("proguard") {
-    dependsOn("shadowJar")
+    dependsOn(shadowJar)
 
     val proguardRules = file("proguard-rules.pro")
-    val originalJar = shadowJar.map { it.outputs.files.singleFile }
+    val originalJar = shadowJar.flatMap { it.archiveFile }
+    val outputJar = layout.buildDirectory.file("libs/apktool_$apktoolVersion.jar")
 
-    inputs.files(originalJar, proguardRules)
-    outputs.file("build/libs/apktool_$apktoolVersion.jar")
+    inputs.file(originalJar)
+    inputs.file(proguardRules)
+    outputs.file(outputJar)
 
     classpath(r8)
     mainClass.set("com.android.tools.r8.R8")
 
-    args(
-        "--release",
-        "--classfile",
-        "--no-minification",
-        "--map-diagnostics:UnusedProguardKeepRuleDiagnostic", "info", "none",
-        "--lib", javaLauncher.get().metadata.installationPath.toString(),
-        "--output", outputs.files.singleFile.toString(),
-        "--pg-conf", proguardRules.toString(),
-        originalJar.get().toString()
-    )
+    doFirst {
+        args = listOf(
+            "--release",
+            "--classfile",
+            "--no-minification",
+            "--map-diagnostics:UnusedProguardKeepRuleDiagnostic", "info", "none",
+            "--lib", javaLauncher.get().metadata.installationPath.toString(),
+            "--output", outputJar.get().asFile.absolutePath,
+            "--pg-conf", proguardRules.absolutePath,
+            originalJar.get().asFile.absolutePath
+        )
+    }
 }

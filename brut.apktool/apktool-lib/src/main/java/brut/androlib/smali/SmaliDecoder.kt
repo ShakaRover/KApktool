@@ -18,8 +18,8 @@ package brut.androlib.smali
 
 import brut.androlib.exceptions.AndrolibException
 import brut.util.OS
-import com.android.tools.smali.baksmali.Baksmali
 import com.android.tools.smali.baksmali.BaksmaliOptions
+import com.android.tools.smali.baksmali.disassembleDexFile
 import com.android.tools.smali.dexlib2.analysis.InlineMethodResolver
 import com.android.tools.smali.dexlib2.dexbacked.DexBackedDexFile
 import com.android.tools.smali.dexlib2.dexbacked.DexBackedOdexFile
@@ -142,7 +142,7 @@ class SmaliDecoder(
         }
 
         OS.mkdir(smaliDir)
-        Baksmali.disassembleDexFile(dexFile, smaliDir, jobs, options)
+        disassembleDexFile(dexFile, smaliDir, jobs, options)
 
         val apiLevel = dexFile.opcodes.api
         mInferredApiLevel.updateAndGet { cur -> if (cur == 0 || cur > apiLevel) apiLevel else cur }
