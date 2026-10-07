@@ -23,6 +23,10 @@ application {
 
 tasks {
     processResources {
+        // Make the embedded version part of the task inputs, otherwise Gradle keeps the
+        // previously expanded apktool.properties when only the git revision changed.
+        inputs.property("version", apktoolVersion)
+        inputs.property("gitrev", gitRevision)
         from("src/main/resources") {
             include("apktool.properties")
             expand("version" to apktoolVersion, "gitrev" to gitRevision)
