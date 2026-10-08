@@ -73,30 +73,50 @@ class SmaliDecoder(
         try {
             // 取出请求的 dex。
             val dexEntry = mDexContainer.getEntry(dexName)
-                ?: throw AndrolibException("Could not find file: $dexName")
 
             // 请求的 dex 编号为 1。
             val dexFiles = TreeMap<Int, DexBackedDexFile>()
-            dexFiles[1] = dexEntry.dexFile
 
-            // 多 dex 容器时补充其余 dex。
             val prefix = "$dexName/"
-            for (dexEntryName in mDexContainer.dexEntryNames) {
-                if (dexEntryName == dexName) {
-                    continue
+            if (dexEntry != null) {
+                dexFiles[1] = dexEntry.dexFile
+
+                // 多 dex 容器时补充其余 dex。
+                for (dexEntryName in mDexContainer.dexEntryNames) {
+                    if (dexEntryName == dexName) {
+                        continue
+                    }
+
+                    if (!dexEntryName.startsWith(prefix)) {
+                        continue
+                    }
+
+                    val dexNum = try {
+                        dexEntryName.substring(prefix.length).toInt()
+                    } catch (ignored: NumberFormatException) {
+                        continue
+                    }
+                    if (dexNum > 1) {
+                        dexFiles[dexNum] = mDexContainer.getEntry(dexEntryName)!!.dexFile
+                    }
+                }
+            } else {
+                // Android 16 引入的 DEX 容器：单个 zip 条目（如 classes.dex）内拼接了多个 dex，
+                // 因此不存在名为 dexName 的条目。ksmali 的 ZipDexContainer 将其命名为
+                // "<条目名>/0"、"<条目名>/1" ...（0 基）。按 N 升序收集并映射为
+                // dexFiles[1]、dexFiles[2] ...，与 classes.dex 编号为 1 的约定保持一致。
+                for (dexEntryName in mDexContainer.dexEntryNames) {
+                    if (!dexEntryName.startsWith(prefix)) {
+                        continue
+                    }
+
+                    val index = dexEntryName.substring(prefix.length).toIntOrNull() ?: continue
+                    val containerEntry = mDexContainer.getEntry(dexEntryName) ?: continue
+                    dexFiles[index + 1] = containerEntry.dexFile
                 }
 
-                if (!dexEntryName.startsWith(prefix)) {
-                    continue
-                }
-
-                val dexNum = try {
-                    dexEntryName.substring(prefix.length).toInt()
-                } catch (ignored: NumberFormatException) {
-                    continue
-                }
-                if (dexNum > 1) {
-                    dexFiles[dexNum] = mDexContainer.getEntry(dexEntryName)!!.dexFile
+                if (dexFiles.isEmpty()) {
+                    throw AndrolibException("Could not find file: $dexName")
                 }
             }
 
