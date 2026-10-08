@@ -8,10 +8,21 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# The default GITHUB_TOKEN of a repository created after Feb 2023 is read-only, which makes the
+# SARIF upload of codeql-action/analyze fail with "Resource not accessible by integration".
+permissions:
+  contents: read
+  actions: read
+  packages: read
+  security-events: write
+
 jobs:
   analyze:
     name: Analyze
     runs-on: ubuntu-latest
+    # Dependabot-triggered runs always get a read-only token regardless of the block above, so the
+    # upload would fail again; build.yml still runs the full build and test suite for those PRs.
+    if: github.actor != 'dependabot[bot]'
     steps:
       - uses: actions/checkout@v7
         with:
