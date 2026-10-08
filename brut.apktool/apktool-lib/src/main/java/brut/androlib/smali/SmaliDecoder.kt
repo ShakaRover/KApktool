@@ -52,9 +52,15 @@ class SmaliDecoder(
 
     init {
         // ZipDexContainer 懒初始化且非线程安全：在构造线程上先行触发初始化。
+        //
+        // 注意：ZipFile 打开失败时抛的是 ZipDexContainer.NotAZipFileException（RuntimeException，
+        // 而非 IOException）。加固/畸形 APK（例如某条目压缩方法非法）会让 java.util.zip.ZipFile
+        // 拒绝整个包，若不捕获就会向上抛出无信息的裸异常，用户无法判断是包本身有问题。
         try {
             mDexContainer.getEntry("")
         } catch (ex: IOException) {
+            throw AndrolibException("Could not open apk file: $apkFile", ex)
+        } catch (ex: ZipDexContainer.NotAZipFileException) {
             throw AndrolibException("Could not open apk file: $apkFile", ex)
         }
     }

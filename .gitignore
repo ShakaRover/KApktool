@@ -28,3 +28,6 @@ gradle.properties
 
 # Pi agent config
 .pi/
+
+# Local test fixtures / scratch files (issue repros, extracted APKs, benchmarks)
+tests/
