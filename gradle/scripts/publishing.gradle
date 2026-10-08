@@ -9,7 +9,7 @@ mavenPublishing {
     pom {
         name = "Apktool"
         description = "A tool for reverse engineering Android apk files."
-        url = "https://apktool.org"
+        url = "https://github.com/ShakaRover/KApktool"
 
         licenses {
             license {
@@ -28,11 +28,17 @@ mavenPublishing {
                 name = "Ryszard Wiśniewski"
                 email = "brut.alll@gmail.com"
             }
+            // Maintainer of this fork.
+            developer {
+                id = "ShakaRover"
+                name = "ShakaRover"
+                email = "ShakaRover@gmail.com"
+            }
         }
         scm {
-            connection = "scm:git:git://github.com/iBotPeaches/Apktool.git"
-            developerConnection = "scm:git:git@github.com:iBotPeaches/Apktool.git"
-            url = "https://github.com/iBotPeaches/Apktool"
+            connection = "scm:git:git://github.com/ShakaRover/KApktool.git"
+            developerConnection = "scm:git:git@github.com:ShakaRover/KApktool.git"
+            url = "https://github.com/ShakaRover/KApktool"
         }
     }
 }

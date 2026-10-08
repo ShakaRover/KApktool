@@ -2,16 +2,28 @@
 
 The steps taken for slicing an official release of Apktool.
 
+> [!NOTE]
+> This document was inherited from upstream (iBotPeaches/Apktool). Steps that reference upstream-only channels —
+> Bitbucket, the connortumbleson.com mirror, the apktool.org website, the XDA thread and the personal blog — are kept
+> for reference only and do not apply here. This fork ships from `main` on GitHub: tag the release, push the tag, then
+> attach the jar from `./gradlew build shadowJar proguard release` to a
+> [GitHub Release](https://github.com/ShakaRover/KApktool/releases/new). Maven Central publishing is wired up for
+> `apktool-lib` in `gradle/scripts/publishing.gradle` under the `org.apktool` coordinates and needs the credentials
+> listed below.
+
 ### Ensuring proper license headers
 
 _Currently broken after movement to kotlin dsl._
 
 ### Tagging the release.
 
-Inside `build.gradle` there are two lines.
+Inside `build.gradle.kts` there are two lines.
 
     version
     suffix
+
+Currently `version = "3.1.0"` and `suffix = "SNAPSHOT"` (`build.gradle.kts:3-4`); the `2.2.2` examples below come from
+upstream's history.
 
 The version variable should be left unchanged. If done correctly, it will already be the version
 you are about to release. In this case `2.2.2`. The suffix variable should read `SNAPSHOT` as
@@ -93,31 +105,30 @@ must match these. If they do not - they are invalid.
 
 ### Lets get uploading.
 
-Lets make sure we actually pushed these release changes to the repo (Both Github & Bitbucket)
+Lets make sure we actually pushed these release changes to the repo
 
     git push origin main
     git push origin vx.x.x
 
-    git push bitbucket master
-    git push bitbucket vx.x.x
-
 We upload the binaries into 3 places.
 
-1. [Bitbucket Downloads](https://bitbucket.org/iBotPeaches/apktool/downloads)
-2. [Github Releases](https://github.com/iBotPeaches/Apktool/releases) - Since `2.2.1`.
-3. [Backup Mirror](https://connortumbleson.com/apktool/)
+1. [Github Releases](https://github.com/ShakaRover/KApktool/releases) - Since `2.2.1`.
+2. [Bitbucket Downloads](https://bitbucket.org/iBotPeaches/apktool/downloads) - upstream only.
+3. [Backup Mirror](https://connortumbleson.com/apktool/) - upstream only.
 4. [Sonatype (Maven)](https://oss.sonatype.org)
 
 #### Bitbucket
 
-This one is pretty easy. Head to the URL attached to the hyperlink #1 above. There will be a "Add Files"
+_Upstream only - this fork has no Bitbucket repository._
+
+This one is pretty easy. Head to the URL attached to the hyperlink #2 above. There will be a "Add Files"
 button on the top right of the page. Upload the `apktool_x.x.x.jar` file.
 
 After it is uploaded. Immediately visit the page and download it. Check the `md5` for a match.
 
 #### GitHub
 
-This option will not work until the tag is pushed. You can head to this [page](https://github.com/iBotPeaches/Apktool/releases/new)
+This option will not work until the tag is pushed. You can head to this [page](https://github.com/ShakaRover/KApktool/releases/new)
 to draft a new release. The `Tag version` dropdown will have the new tag. In this case `v2.2.2`.
 
 Select that option and make the title `Apktool vx.x.x`. There will be a description field on this release.
@@ -126,6 +137,8 @@ Hold tight, we link the release blog post in this field, but we can edit the rel
 Upload the binary `apktool_x.x.x.jar` and submit the release.
 
 #### Backup Server
+
+_Upstream only - the `connortumbleson.com` mirror is not maintained by this fork._
 
 Access to this server is probably limited so this option may not be possible. SSH into the
 `connortumbleson.com` server with username `connor`. Head to `public_html/apktool` and upload
@@ -157,8 +170,8 @@ You'll want to log in and view the Staging repositories and confirm you see the 
 
 With those done, time to get writing the release post.
 
-We currently blog the releases on the [Connor Tumbleson personal blog](https://connortumbleson.com/).
-This may change and the formatting of these release posts change over time.
+_Upstream only - upstream blogs the releases on the [Connor Tumbleson personal blog](https://connortumbleson.com/).
+This fork has no blog; the release notes live in the GitHub release._
 
 Some recent releases for understanding the pattern can be found below.
 
@@ -187,6 +200,8 @@ Apktool is released.
 
 ### XDA Thread
 
+_Upstream only - the XDA thread belongs to upstream._
+
 We have a [thread](https://forum.xda-developers.com/showthread.php?t=1755243) on XDA Developers.
 This thread follows the same pattern for all releases.
 
@@ -198,6 +213,8 @@ can be found below:
 3. [2.0.0](http://forum.xda-developers.com/showpost.php?p=60255972&postcount=3063)
 
 ### Apktool Website
+
+_Upstream only - apktool.org is upstream's website and is not updated by this fork._
 
 The Apktool project website has a few locations to update:
 
@@ -212,7 +229,7 @@ The easiest way to describe this is to just link to a [previous release](https:/
 Now that we've released a version, we should hopefully have no more tickets in the release just published.
 If there are, move those tickets to the next milestone.
 
-You can head to [milestones](https://github.com/iBotPeaches/Apktool/milestones) to close the just
+You can head to [milestones](https://github.com/ShakaRover/KApktool/milestones) to close the just
 released version and create another.
 
 I tend to create the next release (In this case `2.2.3`) with an ETA of 3 months in the future. This
@@ -220,12 +237,17 @@ is just a guideline but helps me to release a new version every 3 months.
 
 ### Social Spam
 
+_Upstream only - upstream promotes releases on its own social accounts._
+
 The final step is to send this release into the wild via some social posting. Head to the blog
 where the release post was and send that link to Twitter, Google and whatever else you use.
 
 Relax and watch the bug tracker.
 
 # Building aapt2 binaries.
+
+_Upstream only - this describes how upstream builds the aapt2 binaries that ship in
+`brut.apktool/apktool-lib/src/main/resources/prebuilt`. This fork consumes those prebuilts as-is._
 
 The steps taken for building our modified aapt2 binaries for apktool.
 

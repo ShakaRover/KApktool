@@ -1,3 +1,9 @@
+# Apktool Roadmap
+
+The issue and pull request numbers below point at the
+[upstream issue tracker](https://github.com/iBotPeaches/Apktool/issues), where these discussions were held. This fork
+continues the same code base, so the entries still describe work that applies here.
+
 ## Automatic Remapping of ResourceId
 We currently prevent resourceIds from changing, by utilizing the `public.xml` file which makes the resources public, but
 then prevents them to be used in some locations (`android:scheme`). The correct fix would be to record the resourceIds
