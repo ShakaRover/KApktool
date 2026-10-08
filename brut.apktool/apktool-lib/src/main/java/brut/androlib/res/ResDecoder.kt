@@ -82,6 +82,11 @@ class ResDecoder(
 
         table.load()
 
+        // 可选：把混淆/非法的资源类型名推断为合法名，使 res/<type>/ 能被 aapt2 接受。
+        if (mConfig.isInferResTypeNames) {
+            ResTypeNameInference.apply(table)
+        }
+
         val inDir: Directory
         val outDir: Directory
         try {
@@ -102,7 +107,9 @@ class ResDecoder(
         )
         var serial = ResXmlSerializer(true)
         val handler = ResXmlPullEventHandler(mApkInfo)
-        decoders[ResFileDecoder.Type.BINARY_XML] = ResXmlPullStreamDecoder(parser, serial, handler)
+        decoders[ResFileDecoder.Type.BINARY_XML] = ResXmlPullStreamDecoder(
+            parser, serial, handler, mConfig.isDedupeXmlAttributes,
+        )
 
         val fileDecoder = ResFileDecoder(decoders)
 
@@ -379,7 +386,7 @@ class ResDecoder(
         )
         val serial = ResXmlSerializer(true)
         val handler = ManifestPullEventHandler(mApkInfo, !mConfig.isAnalysisMode)
-        val decoder = ResXmlPullStreamDecoder(parser, serial, handler)
+        val decoder = ResXmlPullStreamDecoder(parser, serial, handler, mConfig.isDedupeXmlAttributes)
 
         Log.i(TAG, "Decoding AndroidManifest.xml with " +
             (if (pkg != null) "resources" else "only framework resources") + "...")

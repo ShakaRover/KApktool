@@ -48,6 +48,23 @@ object XmlPullUtils {
     @JvmStatic
     @Throws(XmlPullParserException::class, IOException::class)
     fun copy(`in`: XmlPullParser, out: XmlSerializer, handler: EventHandler?) {
+        copy(`in`, out, handler, false)
+    }
+
+    /**
+     * 带事件拦截器地复制事件流。
+     *
+     * [dedupeAttributes] 为 true 时，同一元素上重复出现的同名属性只保留最后一个
+     * （保持与 Android 运行时一致的"后者生效"语义），使输出为合法 XML。
+     */
+    @JvmStatic
+    @Throws(XmlPullParserException::class, IOException::class)
+    fun copy(
+        `in`: XmlPullParser,
+        out: XmlSerializer,
+        handler: EventHandler?,
+        dedupeAttributes: Boolean,
+    ) {
         val standalone = `in`.getProperty(PROPERTY_XMLDECL_STANDALONE) as? Boolean
 
         // 部分解析器已消费掉 START_DOCUMENT 事件，这里手动补发以保持一致性。
@@ -81,12 +98,15 @@ object XmlPullUtils {
                         }
                     }
                     out.startTag(normalizeNamespace(`in`.namespace), `in`.name)
+                    // 同一元素内的同名属性去重（namespace + name 作为键）。
+                    val seenAttributes = if (dedupeAttributes) HashSet<String>() else null
                     for (i in 0 until `in`.attributeCount) {
-                        out.attribute(
-                            normalizeNamespace(`in`.getAttributeNamespace(i)),
-                            `in`.getAttributeName(i),
-                            `in`.getAttributeValue(i),
-                        )
+                        val ns = normalizeNamespace(`in`.getAttributeNamespace(i))
+                        val name = `in`.getAttributeName(i)
+                        if (seenAttributes != null && !seenAttributes.add((ns ?: "") + "\u0000" + name)) {
+                            continue
+                        }
+                        out.attribute(ns, name, `in`.getAttributeValue(i))
                     }
                 }
                 XmlPullParser.END_TAG ->

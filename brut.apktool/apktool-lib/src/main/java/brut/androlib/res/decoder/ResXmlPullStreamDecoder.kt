@@ -37,13 +37,14 @@ class ResXmlPullStreamDecoder @JvmOverloads constructor(
     private val mParser: BinaryXmlResourceParser,
     private val mSerial: ResXmlSerializer,
     private val mHandler: EventHandler? = null,
+    private val mDedupeAttributes: Boolean = false,
 ) : ResStreamDecoder {
     @Throws(AndrolibException::class)
     override fun decode(`in`: InputStream?, out: OutputStream?) {
         try {
             mParser.setInput(`in`, null)
             mSerial.setOutput(out!!, null)
-            XmlPullUtils.copy(mParser, mSerial, mHandler)
+            XmlPullUtils.copy(mParser, mSerial, mHandler, mDedupeAttributes)
         } catch (ex: XmlPullParserException) {
             throw RawXmlEncounteredException(ex)
         } catch (ex: IOException) {

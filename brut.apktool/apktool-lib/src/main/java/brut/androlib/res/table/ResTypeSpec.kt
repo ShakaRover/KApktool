@@ -29,8 +29,26 @@ class ResTypeSpec(
     private val mId: Int,
     name: String,
 ) {
-    /** 类型名（非法名已校正）。 */
-    val name: String = if (isValidTypeName(name)) name else String.format("invalid%02X", mId)
+    /** 原始名是否为合法 AAPT 类型名（false 即混淆/非法）。 */
+    private val mNameValid: Boolean = isValidTypeName(name)
+
+    /** 类型名（非法名先校正为 invalid%02X，可用 [rename] 替换为推断名）。 */
+    var name: String = if (mNameValid) name else String.format("invalid%02X", mId)
+        private set
+
+    /** 当前名称是否需要推断（即不是合法 AAPT 类型名）。 */
+    val needsNameInference: Boolean
+        get() = !isValidTypeName(name)
+
+    /**
+     * 把混淆/非法类型名替换为推断出的合法名（仅解码期使用，见 `--infer-res-type-names`）。
+     *
+     * 调用后 [name] 会同步影响目录名、public.xml 与所有引用，保证工程自洽。
+     */
+    fun rename(newName: String) {
+        require(isValidTypeName(newName)) { "Not a valid resource type name: $newName" }
+        name = newName
+    }
 
     /** 所属包。 */
     val `package`: ResPackage
@@ -92,11 +110,21 @@ class ResTypeSpec(
             "string" to setOf("string"),
         )
 
-        /** 合法类型名白名单。 */
-        private fun isValidTypeName(name: String): Boolean = name in setOf(
+        /** 合法类型名白名单（顺序即推断兜底的偏好顺序）。 */
+        @JvmStatic
+        val VALID_TYPE_NAMES: List<String> = listOf(
             "anim", "animator", "array", "attr", "^attr-private", "bool", "color", "dimen",
             "drawable", "font", "fraction", "id", "integer", "interpolator", "layout", "menu",
             "mipmap", "navigation", "plurals", "raw", "string", "style", "transition", "xml",
         )
+
+        /**
+         * 可作为 `res/<type>/` 目录名的类型名（排除 `^attr-private` 这类仅内部使用的名字）。
+         */
+        @JvmStatic
+        val DIRECTORY_TYPE_NAMES: List<String> = VALID_TYPE_NAMES.filterNot { it.startsWith("^") }
+
+        /** 合法类型名白名单。 */
+        private fun isValidTypeName(name: String): Boolean = name in VALID_TYPE_NAMES
     }
 }

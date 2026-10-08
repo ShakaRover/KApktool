@@ -80,6 +80,23 @@ class Config(
     /** 忽略原始（非二进制）属性值。 */
     var isIgnoreRawValues: Boolean = false
 
+    /**
+     * 解码 XML 时去除同一元素上的重复属性（同名属性只保留最后一个）。
+     *
+     * 默认关闭。部分加固/异常 APK 的二进制 XML 会在同一元素上重复属性
+     * （如 android:elevation 出现两次），apktool 会忠实输出，而 aapt2 会以
+     * "duplicate attribute" 拒绝回编。开启后输出合法 XML，代价是丢弃重复项。
+     */
+    var isDedupeXmlAttributes: Boolean = false
+
+    /**
+     * 把混淆/非法的资源类型名推断为合法名（如 ulfnf0000 -> anim）。
+     *
+     * 默认关闭。开启后 res/<type>/ 与 res/values/public.xml 会使用推断名，
+     * 使加固 APK 能被 aapt2 回编；推断是启发式的，且回编时类型 ID 会被 aapt2 重排。
+     */
+    var isInferResTypeNames: Boolean = false
+
     /** 分析模式（只读，不落盘完整工程）。 */
     var isAnalysisMode: Boolean = false
 

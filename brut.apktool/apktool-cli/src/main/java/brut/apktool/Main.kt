@@ -168,6 +168,22 @@ object Main {
         .desc("Do not decode assets.")
         .get()
 
+    private val decodeDedupeXmlAttributesOption: Option = Option.builder()
+        .longOpt("dedupe-xml-attributes")
+        .desc(
+            "Drop duplicate attributes on the same element when decoding XML.\n" +
+                "Helps rebuild APKs whose binary XML repeats an attribute, which aapt2 rejects."
+        )
+        .get()
+
+    private val decodeInferResTypeNamesOption: Option = Option.builder()
+        .longOpt("infer-res-type-names")
+        .desc(
+            "Infer valid resource type names for obfuscated/invalid ones.\n" +
+                "Rewrites res/<type>/ and public.xml so hardened APKs can be rebuilt by aapt2."
+        )
+        .get()
+
     private val decodeOutputOption: Option = Option.builder("o")
         .longOpt("output")
         .desc("Output decoded files to <dir>. (default: apk.out)")
@@ -278,6 +294,8 @@ object Main {
                 decodeOptions.addOption(decodeKeepBrokenResOption)
                 decodeOptions.addOption(decodeMatchOriginalOption)
                 decodeOptions.addOption(decodeNoAssetsOption)
+                decodeOptions.addOption(decodeDedupeXmlAttributesOption)
+                decodeOptions.addOption(decodeInferResTypeNamesOption)
                 decodeOptions.addOption(decodeNoDebugInfoOption)
                 decodeOptions.addOption(decodeOnlyManifestOption)
                 decodeOptions.addOption(decodeResResolveModeOption)
@@ -508,6 +526,12 @@ object Main {
         }
         if (cli.hasOption(decodeNoAssetsOption)) {
             config.setDecodeAssets(Config.DecodeAssets.NONE)
+        }
+        if (cli.hasOption(decodeDedupeXmlAttributesOption)) {
+            config.isDedupeXmlAttributes = true
+        }
+        if (cli.hasOption(decodeInferResTypeNamesOption)) {
+            config.isInferResTypeNames = true
         }
 
         val outDir: File = if (cli.hasOption(decodeOutputOption)) {
