@@ -275,6 +275,17 @@ class ResXmlSerializer(
         if (!mPending) {
             throw IllegalStateException("Illegal position for attribute.")
         }
+
+        // 加固 APK 会把某个属性的“名字”做成注入 XML 标记的字符串，例如
+        // " >\n  </manifest>\n  android:name"（见 ApkEditor Protect / issue #3847）。
+        // 若照常写成 name="value"，就会提前闭合开始标签与元素，产出的 XML 结构被破坏，
+        // aapt2 回编时报 unbound prefix / duplicate attribute。
+        // XML 名称本来就不允许空格、<、> 等字符，因此直接丢弃并告警。
+        if (name == null || !isValidXmlName(name)) {
+            Log.w(TAG, "Dropping attribute with invalid XML name: %s", name)
+            return this
+        }
+
         val namespace = namespaceArg ?: ""
 
         write(' ')
@@ -524,5 +535,30 @@ class ResXmlSerializer(
 
         /** 写出缓冲区大小（字符）。 */
         private const val BUFFER_SIZE = 8192
+
+        /** 校验是否为合法 XML 1.0 Name（NameStartChar + NameChar*）。 */
+        @JvmStatic
+        fun isValidXmlName(name: String): Boolean {
+            if (name.isEmpty() || !isNameStartChar(name[0])) {
+                return false
+            }
+            for (i in 1 until name.length) {
+                if (!isNameChar(name[i])) {
+                    return false
+                }
+            }
+            return true
+        }
+
+        private fun isNameStartChar(c: Char): Boolean =
+            c == ':' || c == '_' || c in 'A'..'Z' || c in 'a'..'z' ||
+                c in '\u00C0'..'\u00D6' || c in '\u00D8'..'\u00F6' || c in '\u00F8'..'\u02FF' ||
+                c in '\u0370'..'\u037D' || c in '\u037F'..'\u1FFF' || c in '\u200C'..'\u200D' ||
+                c in '\u2070'..'\u218F' || c in '\u2C00'..'\u2FEF' || c in '\u3001'..'\uD7FF' ||
+                c in '\uF900'..'\uFDCF' || c in '\uFDF0'..'\uFFFD'
+
+        private fun isNameChar(c: Char): Boolean =
+            isNameStartChar(c) || c == '-' || c == '.' || c in '0'..'9' ||
+                c == '\u00B7' || c in '\u0300'..'\u036F' || c in '\u203F'..'\u2040'
     }
 }
