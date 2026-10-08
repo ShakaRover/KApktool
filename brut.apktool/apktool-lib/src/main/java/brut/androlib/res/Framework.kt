@@ -25,7 +25,6 @@ import brut.androlib.res.table.ResTable
 import brut.common.Log
 import brut.util.BrutIO
 import brut.util.OS
-import brut.util.Pair
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.IOException
@@ -113,8 +112,8 @@ class Framework(
         // 公开全部 entry spec。
         val buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN)
         for (pair in parser.getEntrySpecFlagsOffsets()!!) {
-            var position = pair.left.toInt()
-            val count: Int = pair.right
+            var position = pair.first.toInt()
+            val count: Int = pair.second
             for (i in 0 until count) {
                 val flags = buffer.getInt(position)
                 // ResTable_typeSpec::SPEC_PUBLIC

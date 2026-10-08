@@ -1,14 +1,10 @@
 dependencies {
-    api(project(":brut.j.common"))
-    api(project(":brut.j.util"))
-    api(project(":brut.j.dir"))
-    api(project(":brut.j.xml"))
-    api(project(":brut.j.yaml"))
+    // The former brut.j.* helper modules (brut.common / brut.util / brut.directory /
+    // brut.xml / brut.xmlpull / brut.yaml) now live in this module.
+    api(libs.xmlpull)
 
     implementation(libs.baksmali)
     implementation(libs.smali)
-    implementation(libs.guava)
-    implementation(libs.commons.io)
 
     testImplementation(libs.junit)
     testImplementation(libs.xmlunit)

@@ -21,7 +21,6 @@ import brut.androlib.exceptions.NinePatchNotFoundException
 import brut.androlib.res.data.LayoutBounds
 import brut.androlib.res.data.NinePatchData
 import brut.util.BinaryDataInputStream
-import org.apache.commons.io.IOUtils
 import java.awt.image.BufferedImage
 import java.awt.image.ImageObserver
 import java.io.ByteArrayInputStream
@@ -42,7 +41,7 @@ class ResNinePatchStreamDecoder : ResStreamDecoder {
     @Throws(AndrolibException::class)
     override fun decode(`in`: InputStream?, out: OutputStream?) {
         try {
-            val data = IOUtils.toByteArray(`in`)
+            val data = `in`!!.readBytes()
             if (data.isEmpty()) {
                 return
             }

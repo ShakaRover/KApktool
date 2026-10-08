@@ -16,9 +16,6 @@
  */
 package brut.util
 
-import com.google.common.io.ByteStreams
-import com.google.common.primitives.Ints
-import com.google.common.primitives.Longs
 import java.io.ByteArrayInputStream
 import java.io.DataInput
 import java.io.EOFException
@@ -196,12 +193,19 @@ class BinaryDataInputStream : FilterInputStream, DataInput {
 
     @Throws(IOException::class)
     override fun readFully(b: ByteArray) {
-        ByteStreams.readFully(this, b)
+        readFully(b, 0, b.size)
     }
 
     @Throws(IOException::class)
     override fun readFully(b: ByteArray, off: Int, len: Int) {
-        ByteStreams.readFully(this, b, off, len)
+        var read = 0
+        while (read < len) {
+            val result = read(b, off + read, len - read)
+            if (result < 0) {
+                throw EOFException("Reached end of stream after reading $read of $len bytes")
+            }
+            read += result
+        }
     }
 
     @Throws(IOException::class)
@@ -230,9 +234,9 @@ class BinaryDataInputStream : FilterInputStream, DataInput {
         val b1 = readByte()
         val b2 = readByte()
         return if (mByteOrder == ByteOrder.LITTLE_ENDIAN) {
-            Ints.fromBytes(0, 0, b2, b1)
+            intFromBytes(0, 0, b2, b1)
         } else {
-            Ints.fromBytes(b1, b2, 0, 0)
+            intFromBytes(b1, b2, 0, 0)
         }
     }
 
@@ -246,9 +250,9 @@ class BinaryDataInputStream : FilterInputStream, DataInput {
         val b3 = readByte()
         val b4 = readByte()
         return if (mByteOrder == ByteOrder.LITTLE_ENDIAN) {
-            Ints.fromBytes(b4, b3, b2, b1)
+            intFromBytes(b4, b3, b2, b1)
         } else {
-            Ints.fromBytes(b1, b2, b3, b4)
+            intFromBytes(b1, b2, b3, b4)
         }
     }
 
@@ -263,9 +267,9 @@ class BinaryDataInputStream : FilterInputStream, DataInput {
         val b7 = readByte()
         val b8 = readByte()
         return if (mByteOrder == ByteOrder.LITTLE_ENDIAN) {
-            Longs.fromBytes(b8, b7, b6, b5, b4, b3, b2, b1)
+            longFromBytes(b8, b7, b6, b5, b4, b3, b2, b1)
         } else {
-            Longs.fromBytes(b1, b2, b3, b4, b5, b6, b7, b8)
+            longFromBytes(b1, b2, b3, b4, b5, b6, b7, b8)
         }
     }
 
@@ -357,4 +361,23 @@ class BinaryDataInputStream : FilterInputStream, DataInput {
         `in`.reset()
         mPosition = mMark
     }
+
+    private fun intFromBytes(b1: Byte, b2: Byte, b3: Byte, b4: Byte): Int =
+        (b1.toInt() shl 24) or
+            ((b2.toInt() and 0xFF) shl 16) or
+            ((b3.toInt() and 0xFF) shl 8) or
+            (b4.toInt() and 0xFF)
+
+    private fun longFromBytes(
+        b1: Byte, b2: Byte, b3: Byte, b4: Byte,
+        b5: Byte, b6: Byte, b7: Byte, b8: Byte,
+    ): Long =
+        (b1.toLong() shl 56) or
+            ((b2.toLong() and 0xFF) shl 48) or
+            ((b3.toLong() and 0xFF) shl 40) or
+            ((b4.toLong() and 0xFF) shl 32) or
+            ((b5.toLong() and 0xFF) shl 24) or
+            ((b6.toLong() and 0xFF) shl 16) or
+            ((b7.toLong() and 0xFF) shl 8) or
+            (b8.toLong() and 0xFF)
 }

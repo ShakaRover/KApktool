@@ -32,7 +32,7 @@ import brut.androlib.res.table.value.ResValue
 import brut.androlib.res.xml.ResXmlUtils
 import brut.common.Log
 import brut.util.BinaryDataInputStream
-import com.google.common.io.BaseEncoding
+import brut.util.TextUtils
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserException
 import java.io.BufferedInputStream
@@ -761,7 +761,7 @@ class BinaryXmlResourceParser(
             for (element in buf) {
                 if (element.toInt() != 0) {
                     Log.w(TAG, "%s size: %s bytes, read: %s bytes. Exceeding bytes: %s",
-                        name, size, bytesRead, BaseEncoding.base16().encode(buf))
+                        name, size, bytesRead, TextUtils.encodeHex(buf))
                     return buf
                 }
             }

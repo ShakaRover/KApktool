@@ -18,7 +18,3 @@
 -keep class * extends com.android.tools.smali.util.jcommander.Command { *; }
 -keep class com.android.tools.smali.smali.Main { *; }
 -keep class com.android.tools.smali.baksmali.Main { *; }
-
-# https://github.com/iBotPeaches/Apktool/pull/3670#issuecomment-2296326878
--dontwarn com.google.j2objc.annotations.Weak
--dontwarn com.google.j2objc.annotations.RetainedWith

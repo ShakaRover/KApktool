@@ -16,7 +16,6 @@
  */
 package brut.util
 
-import org.apache.commons.io.IOUtils
 import java.io.File
 import java.io.IOException
 import java.io.InputStream
@@ -38,7 +37,7 @@ object BrutIO {
     @Throws(IOException::class)
     fun readAndClose(`in`: InputStream): ByteArray {
         try {
-            return IOUtils.toByteArray(`in`)
+            return `in`.readBytes()
         } finally {
             closeQuietly(`in`)
         }
@@ -49,11 +48,24 @@ object BrutIO {
     @Throws(IOException::class)
     fun copyAndClose(`in`: InputStream, out: OutputStream) {
         try {
-            IOUtils.copy(`in`, out)
+            `in`.copyTo(out)
         } finally {
             closeQuietly(`in`)
             closeQuietly(out)
         }
+    }
+
+    /**
+     * 取文件名的扩展名（最后一个 '.' 之后的部分），无扩展名时返回空串。
+     *
+     * 语义与 commons-io 的 `FilenameUtils.getExtension` 一致：最后一个路径分隔符
+     * 之后的点才算扩展名分隔符，末尾的点返回空串。
+     */
+    @JvmStatic
+    fun getExtension(fileName: String): String {
+        val lastDot = fileName.lastIndexOf('.')
+        val lastSeparator = maxOf(fileName.lastIndexOf('/'), fileName.lastIndexOf('\\'))
+        return if (lastDot <= lastSeparator) "" else fileName.substring(lastDot + 1)
     }
 
     private fun closeQuietly(stream: java.io.Closeable?) {

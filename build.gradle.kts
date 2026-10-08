@@ -142,7 +142,6 @@ subprojects {
     }
 
     val mavenProjects = arrayOf(
-        "brut.j.common", "brut.j.util", "brut.j.dir", "brut.j.xml", "brut.j.yaml",
         "apktool-lib"
     )
 

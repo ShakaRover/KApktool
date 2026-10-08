@@ -45,8 +45,6 @@ import brut.common.Log
 import brut.directory.Directory
 import brut.directory.DirectoryException
 import brut.directory.FileDirectory
-import brut.util.Pair
-import com.google.common.collect.Lists
 import java.io.File
 import java.io.IOException
 import java.io.InputStream
@@ -109,7 +107,7 @@ class ResDecoder(
         val fileDecoder = ResFileDecoder(decoders)
 
         Log.i(TAG, "Decoding value resources...")
-        for (entry in Lists.newArrayList(listEntries(pkg))) {
+        for (entry in listEntries(pkg).toMutableList()) {
             val value = entry.value
             if (value is ResBag) {
                 value.resolveKeys()
@@ -117,7 +115,7 @@ class ResDecoder(
         }
 
         Log.i(TAG, "Decoding file resources...")
-        for (entry in Lists.newArrayList(listEntries(pkg))) {
+        for (entry in listEntries(pkg).toMutableList()) {
             if (entry.value is ResFileReference) {
                 fileDecoder.decode(entry, inDir, outDir, resFileMap)
             }
@@ -153,7 +151,7 @@ class ResDecoder(
             val value = entry.value
             if (value is ValuesXmlSerializable && !pkg.isAlias(entry.getResId())) {
                 val type = entry.getType()
-                val key = Pair.of(type.getName(), type.getConfig().toQualifiers())
+                val key = Pair(type.getName(), type.getConfig().toQualifiers())
                 entriesMap.getOrPut(key) { ArrayList() }.add(entry)
                 if (type.flag != null) {
                     needsNamespace.add(key)
@@ -163,8 +161,8 @@ class ResDecoder(
 
         // 每组输出一个 values XML。
         for ((key, entries) in entriesMap) {
-            val typeName = key.left
-            val qualifiers = key.right
+            val typeName = key.first
+            val qualifiers = key.second
 
             entries.sortBy { it.getResId() }
 
@@ -203,7 +201,7 @@ class ResDecoder(
 
     /** 生成 res/values/public.xml。 */
     private fun generatePublicXml(pkg: ResPackage, outDir: Directory, serial: ResXmlSerializer) {
-        val specs = Lists.newArrayList(pkg.listEntrySpecs())
+        val specs = ArrayList(pkg.listEntrySpecs())
         specs.sortBy { it.getResId() }
 
         val outFileName = "res/values/public.xml"
@@ -334,7 +332,7 @@ class ResDecoder(
             return
         }
 
-        val overlayables = Lists.newArrayList(pkg.listOverlayables())
+        val overlayables = ArrayList(pkg.listOverlayables())
         overlayables.sortBy { it.getName() }
 
         val outFileName = "res/values/overlayable.xml"
@@ -441,7 +439,7 @@ class ResDecoder(
             }
 
             // 记录资源表用到的 framework 包 ID。
-            val framePackageIds = Lists.newArrayList(table.getFramePackageIds())
+            val framePackageIds = ArrayList(table.getFramePackageIds())
             if (framePackageIds.isNotEmpty()) {
                 val usesFramework = mApkInfo.usesFramework
                 val frameworkIds = usesFramework.ids
@@ -453,7 +451,7 @@ class ResDecoder(
             }
 
             // 记录资源表用到的共享库包名。
-            val libPackageIds = Lists.newArrayList(table.getLibPackageIds())
+            val libPackageIds = ArrayList(table.getLibPackageIds())
             if (libPackageIds.isNotEmpty()) {
                 val usesLibrary = mApkInfo.usesLibrary
                 libPackageIds.sort()

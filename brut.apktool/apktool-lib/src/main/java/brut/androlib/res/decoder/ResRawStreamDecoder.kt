@@ -17,7 +17,6 @@
 package brut.androlib.res.decoder
 
 import brut.androlib.exceptions.AndrolibException
-import org.apache.commons.io.IOUtils
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
@@ -27,7 +26,7 @@ class ResRawStreamDecoder : ResStreamDecoder {
     @Throws(AndrolibException::class)
     override fun decode(`in`: InputStream?, out: OutputStream?) {
         try {
-            IOUtils.copy(`in`, out)
+            `in`!!.copyTo(out!!)
         } catch (ex: IOException) {
             throw AndrolibException("Could not decode raw stream.", ex)
         }

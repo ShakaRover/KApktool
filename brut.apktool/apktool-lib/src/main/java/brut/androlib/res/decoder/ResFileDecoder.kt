@@ -26,7 +26,7 @@ import brut.androlib.res.table.value.ResString
 import brut.common.Log
 import brut.directory.Directory
 import brut.directory.DirectoryException
-import org.apache.commons.io.FilenameUtils
+import brut.util.BrutIO
 import java.io.IOException
 
 /**
@@ -65,7 +65,7 @@ class ResFileDecoder(
         var ext = if (inFileName.endsWith(".9.png")) {
             "9.png"
         } else {
-            FilenameUtils.getExtension(inFileName).lowercase()
+            BrutIO.getExtension(inFileName).lowercase()
         }
 
         // 用 aapt2 式规则决定解码器。

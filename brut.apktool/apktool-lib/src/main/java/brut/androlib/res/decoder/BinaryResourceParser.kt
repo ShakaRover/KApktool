@@ -37,8 +37,7 @@ import brut.androlib.res.table.value.ResString
 import brut.androlib.res.table.value.ResValue
 import brut.common.Log
 import brut.util.BinaryDataInputStream
-import brut.util.Pair
-import com.google.common.io.BaseEncoding
+import brut.util.TextUtils
 import java.io.BufferedInputStream
 import java.util.TreeMap
 import java.io.IOException
@@ -312,7 +311,7 @@ class BinaryResourceParser(
 
         skipUnreadHeader(parser)
 
-        mEntrySpecFlagsOffsets?.add(Pair.of(input.position(), entryCount))
+        mEntrySpecFlagsOffsets?.add(Pair(input.position(), entryCount))
         input.skipBytes(entryCount * 4) // flags
 
         mPackage!!.addTypeSpec(id, mTypeStringPool.getString(id - 1)!!)
@@ -427,8 +426,8 @@ class BinaryResourceParser(
             input.jumpTo(entryStart)
 
             val entry = parseEntry(typeName)!!
-            val key: Int = entry.left
-            val value: ResValue? = entry.right
+            val key: Int = entry.first
+            val value: ResValue? = entry.second
 
             // 无效配置下 type 为 null，值直接丢弃。
             if (type != null) {
@@ -621,7 +620,7 @@ class BinaryResourceParser(
             parseItem(typeName, false)
         }
 
-        return Pair.of(key, value)
+        return Pair(key, value)
     }
 
     /** 解析 map entry（style/array/attr/plurals）。 */
@@ -852,7 +851,7 @@ class BinaryResourceParser(
             for (element in buf) {
                 if (element.toInt() != 0) {
                     Log.w(TAG, "%s size: %s bytes, read: %s bytes. Exceeding bytes: %s",
-                        name, size, bytesRead, BaseEncoding.base16().encode(buf))
+                        name, size, bytesRead, TextUtils.encodeHex(buf))
                     return buf
                 }
             }

@@ -39,6 +39,9 @@ object TextUtils {
     private const val DEC_SIGNIFICAND_DOWN_SHIFT = 36
     private const val ROUND_VALUE = 1L shl 35
 
+    /** 十六进制编码字符表。 */
+    private val HEX_CHARS = "0123456789ABCDEF".toCharArray()
+
     /** 10^N（N>=0）的 60 位归一化有效数表。 */
     private val POSITIVE_SIGNIFICANDS = longArrayOf(
         0x0800000000000000L, 0x0A00000000000000L, 0x0C80000000000000L, 0x0FA0000000000000L, 0x09C4000000000000L,
@@ -119,6 +122,17 @@ object TextUtils {
     fun isPrintableChar(ch: Char): Boolean {
         return (ch in '\u0020'..'\u007E') || (ch in '\u00A0'..'\uD7FF') ||
             (ch in '\uE000'..'\uFDCF') || (ch in '\uFDF0'..'\uFFFD')
+    }
+
+    /** 把字节数组编码为大写十六进制字符串（等价于 guava 的 BaseEncoding.base16()）。 */
+    @JvmStatic
+    fun encodeHex(bytes: ByteArray): String {
+        val out = StringBuilder(bytes.size * 2)
+        for (b in bytes) {
+            val v = b.toInt() and 0xFF
+            out.append(HEX_CHARS[v ushr 4]).append(HEX_CHARS[v and 0x0F])
+        }
+        return out.toString()
     }
 
     /** 单个十六进制字符转数值，非法字符返回 -1。 */

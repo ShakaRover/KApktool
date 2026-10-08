@@ -17,8 +17,6 @@
 package brut.util
 
 import brut.common.Log
-import org.apache.commons.io.FilenameUtils
-import org.apache.commons.io.IOUtils
 import java.io.File
 import java.io.IOException
 import java.nio.file.Files
@@ -74,7 +72,7 @@ object ZipUtils {
                     if (doNotCompress != null && doNotCompress.isNotEmpty()) {
                         Predicate { entryName: String ->
                             doNotCompress.contains(entryName) ||
-                                doNotCompress.contains(FilenameUtils.getExtension(entryName))
+                                doNotCompress.contains(BrutIO.getExtension(entryName))
                         }
                     } else {
                         Predicate { false }
@@ -109,7 +107,7 @@ object ZipUtils {
                 return
             }
 
-            val entryName = FilenameUtils.separatorsToUnix(safeName)
+            val entryName = safeName.replace('\\', '/')
             val zipEntry = ZipEntry(entryName)
 
             if (doNotCompress.test(entryName)) {
@@ -125,7 +123,7 @@ object ZipUtils {
 
             out.putNextEntry(zipEntry)
             Files.newInputStream(file.toPath()).use { `in` ->
-                IOUtils.copy(`in`, out)
+                `in`.copyTo(out)
             }
             out.closeEntry()
         } catch (ex: InvalidPathException) {

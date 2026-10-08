@@ -29,7 +29,6 @@ import brut.directory.ExtFile
 import brut.util.BackgroundWorker
 import brut.util.BrutIO
 import brut.util.OS
-import org.apache.commons.io.FilenameUtils
 import java.io.File
 import java.io.IOException
 import java.nio.file.Files
@@ -329,7 +328,7 @@ class ApkDecoder(
 
             for (fileName in `in`.getFiles(true)) {
                 if (`in`.getCompressionLevel(fileName) == 0) {
-                    val ext = FilenameUtils.getExtension(fileName)
+                    val ext = BrutIO.getExtension(fileName)
                     if (`in`.getSize(fileName) > 0 && ext.isNotEmpty() &&
                         NO_COMPRESS_EXT_PATTERN.matcher(ext).matches()
                     ) {
@@ -345,7 +344,7 @@ class ApkDecoder(
                 val it = uncompressedFiles.iterator()
                 while (it.hasNext()) {
                     val fileName = it.next()
-                    if (uncompressedExts.contains(FilenameUtils.getExtension(fileName))) {
+                    if (uncompressedExts.contains(BrutIO.getExtension(fileName))) {
                         it.remove()
                     }
                 }
