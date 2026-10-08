@@ -848,8 +848,8 @@ object Main {
         }
 
         // 尾部。
-        writer.println("For additional info, see: https://apktool.org")
-        writer.println("For smali/baksmali info, see: https://github.com/google/smali")
+        writer.println("For additional info, see: https://github.com/ShakaRover/KApktool")
+        writer.println("For smali/baksmali info, see: https://github.com/ShakaRover/ksmali")
 
         writer.flush()
     }
