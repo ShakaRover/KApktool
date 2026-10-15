@@ -60,7 +60,7 @@ extra.set("apktoolVersion", apktoolVersion)
 plugins {
     `java-library`
     alias(libs.plugins.vanniktech.maven.publish) apply false
-    id("org.jetbrains.kotlin.jvm") version "2.4.20" apply false
+    id("org.jetbrains.kotlin.jvm") version "2.4.21" apply false
 }
 
 allprojects {
